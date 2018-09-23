@@ -114,14 +114,11 @@ DynamicForest::DynamicForest(size_t n) : gen((std::random_device())()) {
     }
 }
 
-const char kRight = 0;
-const char kLeft = 1;
-
-DynamicForest::Node* DynamicForest::shift(int u, char dir) {
+DynamicForest::Node* DynamicForest::reroot(int u) {
     DynamicForest::Node *uu = this->dict[{u, u}];
     size_t k = uu->order();
     DynamicForest::Node *root = uu->get_root();
-    auto spl = split(root, k - dir);
+    auto spl = split(root, k - 1);
     return merge(spl.second, spl.first);
 }
 
@@ -130,8 +127,8 @@ void DynamicForest::add_edge(int u, int v) {
     this->dict[{u, v}] = uv;
     Node *vu = new Node(random());
     this->dict[{v, u}] = vu;
-    Node *nu = shift(u, kRight);
-    Node *nv = shift(v, kLeft);
+    Node *nu = reroot(u);
+    Node *nv = reroot(v);
     merge(nu, merge(uv, merge(nv, vu)));
 }
 

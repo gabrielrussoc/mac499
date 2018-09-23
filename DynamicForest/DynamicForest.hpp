@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <cstdint>
 #include <utility>
 #include <random>
 
@@ -32,7 +31,7 @@ class DynamicForest {
     std::mt19937_64 gen;
     static std::pair<Node*, Node*> split(Node *node, size_t k);
     static Node* merge(Node *a, Node *b);
-    Node* shift(int u, char dir);
+    Node* reroot(int u);
     uint64_t random();
 };
 
