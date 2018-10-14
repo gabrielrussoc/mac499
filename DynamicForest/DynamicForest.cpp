@@ -1,6 +1,10 @@
 #include "DynamicForest/DynamicForest.hpp"
 
+#include <queue>
+
 using std::pair;
+using std::vector;
+using std::queue;
 
 namespace usp {
 
@@ -31,6 +35,15 @@ void DynamicForest::Node::update_size() {
         this->size += this->right->size;
     }
 }
+void DynamicForest::Node::update_marked() {
+    this->marked_children = this->mark;
+    if (this->left != NULL) {
+        this->marked_children += this->left->marked_children;
+    }
+    if (this->right != NULL) {
+        this->marked_children += this->right->marked_children;
+    }
+}
 
 // Devolve duas árvores, com os k-primeiros elementos na primeira e o resto na segunda
 pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node, size_t k) {
@@ -50,8 +63,9 @@ pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node
             left->parent = node;
             left->greaterThanParent = true;
         }
-        node->parent = NULL; // pensar mais nisso aqui, precisa?
+        node->parent = NULL;
         node->update_size();
+        node->update_marked();
         return {node, right};
     } else {
         auto spl = split(node->left, k);
@@ -64,6 +78,7 @@ pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node
         }
         node->parent = NULL;
         node->update_size();
+        node->update_marked();
         return {left, node};
     }
 }
@@ -81,6 +96,7 @@ DynamicForest::Node* DynamicForest::merge(DynamicForest::Node *a, DynamicForest:
         node->parent = b;
         node->greaterThanParent = false;
         b->update_size();
+        b->update_marked();
         return b;
     } else {
         Node *node = merge(a->right, b);
@@ -88,6 +104,7 @@ DynamicForest::Node* DynamicForest::merge(DynamicForest::Node *a, DynamicForest:
         node->parent = a;
         node->greaterThanParent = true;
         a->update_size();
+        a->update_marked();
         return a;
     }
 }
@@ -100,17 +117,19 @@ DynamicForest::Node* DynamicForest::Node::get_root() {
     return node;
 }
 
-DynamicForest::Node::Node(uint64_t priority) :
+DynamicForest::Node::Node(uint64_t priority, int label = -1) :
     priority(priority),
     left(NULL),
     right(NULL),
     parent(NULL),
     size(1),
-    greaterThanParent(false) {}
+    greaterThanParent(false),
+    mark(0),
+    label(label) {}
 
 DynamicForest::DynamicForest(size_t n) : gen((std::random_device())()) {
     for (int u = 0; u < n; u++) {
-        this->dict[{u, u}] = new Node(random());
+        this->dict[{u, u}] = new Node(random(), u);
     }
 }
 
@@ -122,7 +141,7 @@ DynamicForest::Node* DynamicForest::reroot(int u) {
     return merge(spl.second, spl.first);
 }
 
-void DynamicForest::add_edge(int u, int v) {
+void DynamicForest::link(int u, int v) {
     Node *uv = new Node(random());
     this->dict[{u, v}] = uv;
     Node *vu = new Node(random());
@@ -136,7 +155,11 @@ bool DynamicForest::is_connected(int u, int v) {
     return this->dict[{u, u}]->get_root() == this->dict[{v, v}]->get_root();
 }
 
-void DynamicForest::remove_edge(int u, int v) {
+bool DynamicForest::has_edge(int u, int v) {
+    return this->dict.find({u, v}) != this->dict.end();
+}
+
+void DynamicForest::cut(int u, int v) {
     auto it_uv = this->dict.find({u, v});
     auto it_vu = this->dict.find({v, u});
     Node *uv = it_uv->second;
@@ -160,6 +183,52 @@ void DynamicForest::remove_edge(int u, int v) {
     tmp = split(tmp.first, 1);
     delete uv;
     delete vu;
+}
+
+size_t DynamicForest::size(int u) {
+    int sz = dict[{u, u}]->get_root()->size;
+    return (sz + 2) / 3;
+}
+
+void DynamicForest::mark(int u) {
+    Node *node = dict[{u, u}];
+    node->mark++;
+    while (node != NULL) {
+        node->marked_children++;
+        node = node->parent;
+    }
+}
+
+void DynamicForest::unmark(int u) {
+    Node *node = dict[{u, u}];
+    node->mark--;
+    while (node != NULL) {
+        node->marked_children--;
+        node = node->parent;
+    }
+}
+
+vector<int> DynamicForest::all_marked(int u) {
+    vector<int> all;
+    Node *root = dict[{u, u}]->get_root();
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node *node = q.front();
+        q.pop();
+        if (node->mark > 0) {
+            all.push_back(node->label);
+        }
+        if (node->marked_children > 0) {
+            if (node->left != NULL) {
+                q.push(node->left);
+            }
+            if (node->right != NULL) {
+                q.push(node->right);
+            }
+        }
+    }
+    return all;
 }
 
 DynamicForest::~DynamicForest() {

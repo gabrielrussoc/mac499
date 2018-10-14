@@ -4,6 +4,9 @@ cc_library(
     srcs = ["DynamicForest.cpp"],
     hdrs = ["DynamicForest.hpp"],
     deps = [],
+    visibility = [
+        "//visibility:public",
+    ]
 )
 
 cc_test(
