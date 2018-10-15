@@ -16,6 +16,10 @@ void DynamicGraph::downgrade(int u, int v, int l) {
     adj[u][l].erase(iterator[uv]);
     adj[v][l].erase(iterator[vu]);
     l--;
+    //acho que tem q rebaixar todas as arestas da árvore antes.
+    if (!F[l].is_connected(u, v)) {
+        F[l].link(u, v);
+    }
     iterator[uv] = adj[u][l].insert(adj[u][l].end(), v);
     iterator[vu] = adj[v][l].insert(adj[v][l].end(), u);
     level[uv] = level[vu] = l;
