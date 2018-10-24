@@ -55,54 +55,105 @@ TEST(DynamicForest, LinkAndCut2) {
   EXPECT_EQ(df.is_connected(0, 4), true);
 }
 
-TEST(DynamicForest, Mark) {
+TEST(DynamicForest, MarkWhite) {
   DynamicForest df(5);
   df.link(0, 1);
   df.link(0, 2);
   df.link(3, 4);
 
-  df.mark(1);
-  df.mark(2);
+  df.mark_white(1);
+  df.mark_white(2);
   vector<int> expected = {1, 2};
-  EXPECT_EQ(sorted(df.all_marked(0)), expected);
-  EXPECT_EQ(sorted(df.all_marked(1)), expected);
-  EXPECT_EQ(sorted(df.all_marked(2)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(0)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(1)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(2)), expected);
 
-  df.mark(4);
+  df.mark_white(4);
   expected = {4};
-  EXPECT_EQ(sorted(df.all_marked(3)), expected);
-  EXPECT_EQ(sorted(df.all_marked(4)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(3)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(4)), expected);
 }
 
-TEST(DynamicForest, Unmark) {
+TEST(DynamicForest, UnmarkWhite) {
   DynamicForest df(5);
   df.link(0, 1);
   df.link(0, 2);
   df.link(3, 4);
 
-  df.mark(1);
-  df.mark(2);
+  df.mark_white(1);
+  df.mark_white(2);
   vector<int> expected = {1, 2};
-  EXPECT_EQ(sorted(df.all_marked(0)), expected);
-  EXPECT_EQ(sorted(df.all_marked(1)), expected);
-  EXPECT_EQ(sorted(df.all_marked(2)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(0)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(1)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(2)), expected);
 
-  df.unmark(1);
+  df.unmark_white(1);
   expected = {2};
-  EXPECT_EQ(sorted(df.all_marked(0)), expected);
-  EXPECT_EQ(sorted(df.all_marked(1)), expected);
-  EXPECT_EQ(sorted(df.all_marked(2)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(0)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(1)), expected);
+  EXPECT_EQ(sorted(df.white_nodes(2)), expected);
 
-  df.mark(4);
+  df.mark_white(4);
   expected = {4};
-  EXPECT_EQ(df.all_marked(3), expected);
-  EXPECT_EQ(df.all_marked(4), expected);
+  EXPECT_EQ(df.white_nodes(3), expected);
+  EXPECT_EQ(df.white_nodes(4), expected);
 
-  df.unmark(4);
+  df.unmark_white(4);
   expected = {};
-  EXPECT_EQ(df.all_marked(3), expected);
-  EXPECT_EQ(df.all_marked(4), expected);
+  EXPECT_EQ(df.white_nodes(3), expected);
+  EXPECT_EQ(df.white_nodes(4), expected);
 }
+
+TEST(DynamicForest, MarkBlack) {
+  DynamicForest df(5);
+  df.link(0, 1);
+  df.link(0, 2);
+  df.link(3, 4);
+
+  df.mark_black(1);
+  df.mark_black(2);
+  vector<int> expected = {1, 2};
+  EXPECT_EQ(sorted(df.black_nodes(0)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(1)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(2)), expected);
+
+  df.mark_black(4);
+  expected = {4};
+  EXPECT_EQ(sorted(df.black_nodes(3)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(4)), expected);
+}
+
+TEST(DynamicForest, UnmarkBlack) {
+  DynamicForest df(5);
+  df.link(0, 1);
+  df.link(0, 2);
+  df.link(3, 4);
+
+  df.mark_black(1);
+  df.mark_black(2);
+  vector<int> expected = {1, 2};
+  EXPECT_EQ(sorted(df.black_nodes(0)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(1)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(2)), expected);
+
+  df.unmark_black(1);
+  expected = {2};
+  EXPECT_EQ(sorted(df.black_nodes(0)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(1)), expected);
+  EXPECT_EQ(sorted(df.black_nodes(2)), expected);
+
+  df.mark_black(4);
+  expected = {4};
+  EXPECT_EQ(df.black_nodes(3), expected);
+  EXPECT_EQ(df.black_nodes(4), expected);
+
+  df.unmark_black(4);
+  expected = {};
+  EXPECT_EQ(df.black_nodes(3), expected);
+  EXPECT_EQ(df.black_nodes(4), expected);
+}
+
+// TODO(gabrielrc): testes para pretos e brancos
 
 TEST(DynamicForest, Size) {
   DynamicForest df(5);

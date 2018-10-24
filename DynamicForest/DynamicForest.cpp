@@ -35,13 +35,16 @@ void DynamicForest::Node::update_size() {
         this->size += this->right->size;
     }
 }
-void DynamicForest::Node::update_marked() {
-    this->marked_children = this->mark;
+void DynamicForest::Node::update_marks() {
+    this->white_children = this->white_count;
+    this->black_children = this->black_count;
     if (this->left != NULL) {
-        this->marked_children += this->left->marked_children;
+        this->white_children += this->left->white_children;
+        this->black_children += this->left->black_children;
     }
     if (this->right != NULL) {
-        this->marked_children += this->right->marked_children;
+        this->white_children += this->right->white_children;
+        this->black_children += this->right->black_children;
     }
 }
 
@@ -65,7 +68,7 @@ pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node
         }
         node->parent = NULL;
         node->update_size();
-        node->update_marked();
+        node->update_marks();
         return {node, right};
     } else {
         auto spl = split(node->left, k);
@@ -78,7 +81,7 @@ pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node
         }
         node->parent = NULL;
         node->update_size();
-        node->update_marked();
+        node->update_marks();
         return {left, node};
     }
 }
@@ -96,7 +99,7 @@ DynamicForest::Node* DynamicForest::merge(DynamicForest::Node *a, DynamicForest:
         node->parent = b;
         node->greaterThanParent = false;
         b->update_size();
-        b->update_marked();
+        b->update_marks();
         return b;
     } else {
         Node *node = merge(a->right, b);
@@ -104,7 +107,7 @@ DynamicForest::Node* DynamicForest::merge(DynamicForest::Node *a, DynamicForest:
         node->parent = a;
         node->greaterThanParent = true;
         a->update_size();
-        a->update_marked();
+        a->update_marks();
         return a;
     }
 }
@@ -124,7 +127,10 @@ DynamicForest::Node::Node(uint64_t priority, int label = -1) :
     parent(NULL),
     size(1),
     greaterThanParent(false),
-    mark(0),
+    white_count(0),
+    black_count(0),
+    white_children(0),
+    black_children(0),
     label(label) {}
 
 DynamicForest::DynamicForest(size_t n) : gen((std::random_device())()) {
@@ -190,25 +196,43 @@ size_t DynamicForest::size(int u) {
     return (sz + 2) / 3;
 }
 
-void DynamicForest::mark(int u) {
+void DynamicForest::mark_white(int u) {
     Node *node = dict[{u, u}];
-    node->mark++;
+    node->white_count++;
     while (node != NULL) {
-        node->marked_children++;
+        node->white_children++;
         node = node->parent;
     }
 }
 
-void DynamicForest::unmark(int u) {
+void DynamicForest::mark_black(int u) {
     Node *node = dict[{u, u}];
-    node->mark--;
+    node->black_count++;
     while (node != NULL) {
-        node->marked_children--;
+        node->black_children++;
         node = node->parent;
     }
 }
 
-vector<int> DynamicForest::all_marked(int u) {
+void DynamicForest::unmark_white(int u) {
+    Node *node = dict[{u, u}];
+    node->white_count--;
+    while (node != NULL) {
+        node->white_children--;
+        node = node->parent;
+    }
+}
+
+void DynamicForest::unmark_black(int u) {
+    Node *node = dict[{u, u}];
+    node->black_count--;
+    while (node != NULL) {
+        node->black_children--;
+        node = node->parent;
+    }
+}
+
+vector<int> DynamicForest::white_nodes(int u) {
     vector<int> all;
     Node *root = dict[{u, u}]->get_root();
     queue<Node*> q;
@@ -216,10 +240,33 @@ vector<int> DynamicForest::all_marked(int u) {
     while (!q.empty()) {
         Node *node = q.front();
         q.pop();
-        if (node->mark > 0) {
+        if (node->white_count > 0) {
             all.push_back(node->label);
         }
-        if (node->marked_children > 0) {
+        if (node->white_children > 0) {
+            if (node->left != NULL) {
+                q.push(node->left);
+            }
+            if (node->right != NULL) {
+                q.push(node->right);
+            }
+        }
+    }
+    return all;
+}
+
+vector<int> DynamicForest::black_nodes(int u) {
+    vector<int> all;
+    Node *root = dict[{u, u}]->get_root();
+    queue<Node*> q;
+    q.push(root);
+    while (!q.empty()) {
+        Node *node = q.front();
+        q.pop();
+        if (node->black_count > 0) {
+            all.push_back(node->label);
+        }
+        if (node->black_children > 0) {
             if (node->left != NULL) {
                 q.push(node->left);
             }

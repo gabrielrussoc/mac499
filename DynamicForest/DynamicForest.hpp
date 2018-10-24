@@ -16,9 +16,12 @@ class DynamicForest {
     bool is_connected(int u, int v);
     bool has_edge(int u, int v);
     size_t size(int u);
-    void mark(int u);
-    void unmark(int u);
-    std::vector<int> all_marked(int u);
+    void mark_white(int u);
+    void unmark_white(int u);
+    void mark_black(int u);
+    void unmark_black(int u);
+    std::vector<int> white_nodes(int u);
+    std::vector<int> black_nodes(int u);
 
  private:
     struct Node {
@@ -29,12 +32,14 @@ class DynamicForest {
         Node* parent;
         size_t size;
         bool greaterThanParent;
-        int mark;
-        int marked_children;
+        int white_count;
+        int black_count;
+        int white_children;
+        int black_children;
         int label;
         size_t order();
         void update_size();
-        void update_marked();
+        void update_marks();
         Node* get_root();
     };
     std::map<std::pair<int, int>, Node*> dict;
