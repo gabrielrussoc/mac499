@@ -6,6 +6,9 @@ cc_library(
     deps = [
         "//DynamicForest:DynamicForest",
     ],
+    visibility = [
+        "//visibility:public",
+    ],
 )
 
 cc_test(

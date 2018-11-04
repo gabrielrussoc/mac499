@@ -20,10 +20,14 @@ void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
     iterator[vu] = non_tree_edges[v][l-1].insert(non_tree_edges[v][l-1].end(), u);
     level[uv] = level[vu] = l-1;
     F[l-1].mark_black(u);
-    F[l-1].mark_white(v);
+    F[l-1].mark_black(v);
 }
 
 void DynamicGraph::replace(int u, int v, int l) {
+    // Tem que fazer mais coisas.
+    // uv agora eh uma aresta de arvore, precisa entrar nas paradas tudo
+    remove_non_tree(u, v);
+    insert_tree(u, v, l);
     for (int i = l; i <= LOGN; i++) {
         F[i].link(u, v);
     }
@@ -46,18 +50,18 @@ DynamicGraph::DynamicGraph(int n) :
 void DynamicGraph::insert(int u, int v) {
     if (!F[LOGN].is_connected(u, v)) {
         F[LOGN].link(u, v);
-        insert_tree(u, v);
+        insert_tree(u, v, LOGN);
     } else {
         insert_non_tree(u, v);
     }
 }
 
-void DynamicGraph::insert_tree(int u, int v) {
+void DynamicGraph::insert_tree(int u, int v, int l) {
     pair<int, int> uv = {u, v};
     pair<int, int> vu = {v, u};
-    iterator[uv] = tree_edges[u][LOGN].insert(tree_edges[u][LOGN].end(), v);
-    iterator[vu] = tree_edges[v][LOGN].insert(tree_edges[v][LOGN].end(), u);
-    level[uv] = level[vu] = LOGN;
+    iterator[uv] = tree_edges[u][l].insert(tree_edges[u][l].end(), v);
+    iterator[vu] = tree_edges[v][l].insert(tree_edges[v][l].end(), u);
+    level[uv] = level[vu] = l;
     F[LOGN].mark_white(u);
     F[LOGN].mark_white(v);
 }
@@ -101,6 +105,7 @@ void DynamicGraph::remove(int u, int v) {
     }
 }
 
+// Rebaixa todos as arestas de arvore de T_u em F_l
 void DynamicGraph::downgrade_tree_edges(int u, int l) {
     for (int x : F[l].white_nodes(u)) {
         auto it = tree_edges[x][l].begin();

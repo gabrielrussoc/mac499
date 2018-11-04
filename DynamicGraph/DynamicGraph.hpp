@@ -26,7 +26,7 @@ class DynamicGraph {
     void downgrade_non_tree(int u, int v, int l);
     void downgrade_tree_edges(int u, int l);
     void replace(int u, int v, int l);
-    void insert_tree(int u, int v);
+    void insert_tree(int u, int v, int l);
     void remove_tree(int u, int v);
     void insert_non_tree(int u, int v);
     void remove_non_tree(int u, int v);
