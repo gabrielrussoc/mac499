@@ -8,7 +8,6 @@ using std::vector;
 
 namespace usp {
 
-
 void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
     pair<int, int> uv = {u, v};
     pair<int, int> vu = {v, u};
@@ -24,8 +23,6 @@ void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
 }
 
 void DynamicGraph::replace(int u, int v, int l) {
-    // Tem que fazer mais coisas.
-    // uv agora eh uma aresta de arvore, precisa entrar nas paradas tudo
     remove_non_tree(u, v);
     insert_tree(u, v, l);
     for (int i = l; i <= LOGN; i++) {
@@ -62,8 +59,8 @@ void DynamicGraph::insert_tree(int u, int v, int l) {
     iterator[uv] = tree_edges[u][l].insert(tree_edges[u][l].end(), v);
     iterator[vu] = tree_edges[v][l].insert(tree_edges[v][l].end(), u);
     level[uv] = level[vu] = l;
-    F[LOGN].mark_white(u);
-    F[LOGN].mark_white(v);
+    F[l].mark_white(u);
+    F[l].mark_white(v);
 }
 
 // TODO(gabrielrc): Esse código é muito parecido com o de insert_tree. Reuse!
