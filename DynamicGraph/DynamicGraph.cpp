@@ -15,6 +15,7 @@ DynamicGraph::DynamicGraph(int n) :
     edges[NON_TREE] = vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1));
 }
 
+// Insere a aresta uv no grafo. Supoe que uv nao existe.
 void DynamicGraph::insert(int u, int v) {
     if (!F[LOGN].is_connected(u, v)) {
         insert(u, v, LOGN, TREE);
@@ -23,6 +24,7 @@ void DynamicGraph::insert(int u, int v) {
     }
 }
 
+// Remove a aresta uv do grafo. Supoe que uv existe.
 void DynamicGraph::remove(int u, int v) {
     if (!F[LOGN].has_edge(u, v)) {
         remove(u, v, NON_TREE);
@@ -51,10 +53,12 @@ void DynamicGraph::remove(int u, int v) {
     }
 }
 
+// Devolve true se u e v estao conectados no grafo
 bool DynamicGraph::is_connected(int u, int v) {
     return F[LOGN].is_connected(u, v);
 }
 
+// Insere a aresta uv do tipo type no nivel l
 void DynamicGraph::insert(int u, int v, int l, edge_type type) {
     pair<int, int> uv = {u, v};
     pair<int, int> vu = {v, u};
@@ -73,6 +77,7 @@ void DynamicGraph::insert(int u, int v, int l, edge_type type) {
     }
 }
 
+// Remove a aresta uv do tipo type
 void DynamicGraph::remove(int u, int v, edge_type type) {
     int l = level[{u, v}];
     edges[type][u][l].erase(iterator[{u, v}]);
@@ -89,7 +94,8 @@ void DynamicGraph::remove(int u, int v, edge_type type) {
     }
 }
 
-// Rebaixa todos as arestas de arvore de T_u em F_l
+// Rebaixa o nível de todos as arestas de nivel l
+// na componente de u em F_l
 void DynamicGraph::downgrade_tree_edges(int u, int l) {
     for (int x : F[l].white_nodes(u)) {
         auto it = edges[TREE][x][l].begin();
@@ -100,6 +106,7 @@ void DynamicGraph::downgrade_tree_edges(int u, int l) {
     }
 }
 
+// Rebaixa o nivel da aresta uv do tipo type no nível l
 void DynamicGraph::downgrade(int u, int v, int l, edge_type type) {
     pair<int, int> uv = {u, v};
     pair<int, int> vu = {v, u};
