@@ -30,19 +30,11 @@ void DynamicGraph::replace(int u, int v, int l) {
     }
 }
 
-DynamicGraph::~DynamicGraph() {}
-
 DynamicGraph::DynamicGraph(int n) :
-        LOGN(ceil(log2(n))),
-        tree_edges(vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1))),
-        non_tree_edges(vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1))) {
-    F = vector<DynamicForest>();
-    F.reserve(LOGN+1);
-    // TODO(gabrielrc): Arrumar o fato de que a DynamicForest nao pode ser copiada.
-    for (int i = 0; i <= LOGN; i++) {
-        F.emplace_back(n);
-    }
-}
+    LOGN(ceil(log2(n))),
+    F(vector<DynamicForest>(LOGN + 1, DynamicForest(n))),
+    tree_edges(vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1))),
+    non_tree_edges(vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1))) {}
 
 void DynamicGraph::insert(int u, int v) {
     if (!F[LOGN].is_connected(u, v)) {

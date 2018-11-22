@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <random>
 #include <vector>
@@ -10,7 +11,7 @@ namespace usp {
 class DynamicForest {
  public:
     explicit DynamicForest(size_t n);
-    ~DynamicForest();
+    DynamicForest(const DynamicForest&);
     void link(int u, int v);
     void cut(int u, int v);
     bool is_connected(int u, int v);
@@ -42,7 +43,7 @@ class DynamicForest {
         void update_marks();
         Node* get_root();
     };
-    std::map<std::pair<int, int>, Node*> dict;
+    std::map<std::pair<int, int>, std::unique_ptr<Node>> dict;
     std::mt19937_64 gen;
     static std::pair<Node*, Node*> split(Node *node, size_t k);
     static Node* merge(Node *a, Node *b);

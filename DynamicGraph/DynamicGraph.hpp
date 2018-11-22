@@ -12,7 +12,6 @@ namespace usp {
 class DynamicGraph {
  public:
     explicit DynamicGraph(int n);
-    ~DynamicGraph();
     void insert(int u, int v);
     void remove(int u, int v);
     bool is_connected(int u, int v);

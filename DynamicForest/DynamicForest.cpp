@@ -1,5 +1,6 @@
 #include "DynamicForest/DynamicForest.hpp"
 
+#include <unordered_map>
 #include <queue>
 
 using std::pair;
@@ -135,12 +136,27 @@ DynamicForest::Node::Node(uint64_t priority, int label = -1) :
 
 DynamicForest::DynamicForest(size_t n) : gen((std::random_device())()) {
     for (int u = 0; u < n; u++) {
-        this->dict[{u, u}] = new Node(random(), u);
+        this->dict[{u, u}] = std::make_unique<Node>(random(), u);
+    }
+}
+
+DynamicForest::DynamicForest(const DynamicForest& other) {
+    std::unordered_map<Node*, Node*> copy;
+    copy[NULL] = NULL;
+    for (const auto& kv : other.dict) {
+        Node *orig = kv.second.get();
+        copy[orig] = (dict[kv.first] = std::make_unique<Node>(*orig)).get();
+    }
+    for (const auto& kv : dict) {
+        Node *node = kv.second.get();
+        node->parent = copy[node->parent];
+        node->left = copy[node->left];
+        node->right = copy[node->right];
     }
 }
 
 DynamicForest::Node* DynamicForest::reroot(int u) {
-    DynamicForest::Node *uu = this->dict[{u, u}];
+    DynamicForest::Node *uu = this->dict[{u, u}].get();
     size_t k = uu->order();
     DynamicForest::Node *root = uu->get_root();
     auto spl = split(root, k - 1);
@@ -148,10 +164,8 @@ DynamicForest::Node* DynamicForest::reroot(int u) {
 }
 
 void DynamicForest::link(int u, int v) {
-    Node *uv = new Node(random());
-    this->dict[{u, v}] = uv;
-    Node *vu = new Node(random());
-    this->dict[{v, u}] = vu;
+    Node *uv = (this->dict[{u, v}] = std::make_unique<Node>(random())).get();
+    Node *vu = (this->dict[{v, u}] = std::make_unique<Node>(random())).get();
     Node *nu = reroot(u);
     Node *nv = reroot(v);
     merge(nu, merge(uv, merge(nv, vu)));
@@ -166,12 +180,8 @@ bool DynamicForest::has_edge(int u, int v) {
 }
 
 void DynamicForest::cut(int u, int v) {
-    auto it_uv = this->dict.find({u, v});
-    auto it_vu = this->dict.find({v, u});
-    Node *uv = it_uv->second;
-    Node *vu = it_vu->second;
-    this->dict.erase(it_uv);
-    this->dict.erase(it_vu);
+    Node *uv = dict[{u, v}].get();
+    Node *vu = dict[{v, u}].get();
     Node *root = uv->get_root();
     size_t left = uv->order();
     size_t right = vu->order();
@@ -187,8 +197,8 @@ void DynamicForest::cut(int u, int v) {
 
     tmp = split(vm, vm->size - 1);
     tmp = split(tmp.first, 1);
-    delete uv;
-    delete vu;
+    dict.erase({u, v});
+    dict.erase({v, u});
 }
 
 size_t DynamicForest::size(int u) {
@@ -197,7 +207,7 @@ size_t DynamicForest::size(int u) {
 }
 
 void DynamicForest::mark_white(int u) {
-    Node *node = dict[{u, u}];
+    Node *node = dict[{u, u}].get();
     node->white_count++;
     while (node != NULL) {
         node->white_children++;
@@ -206,7 +216,7 @@ void DynamicForest::mark_white(int u) {
 }
 
 void DynamicForest::mark_black(int u) {
-    Node *node = dict[{u, u}];
+    Node *node = dict[{u, u}].get();
     node->black_count++;
     while (node != NULL) {
         node->black_children++;
@@ -215,7 +225,7 @@ void DynamicForest::mark_black(int u) {
 }
 
 void DynamicForest::unmark_white(int u) {
-    Node *node = dict[{u, u}];
+    Node *node = dict[{u, u}].get();
     node->white_count--;
     while (node != NULL) {
         node->white_children--;
@@ -224,7 +234,7 @@ void DynamicForest::unmark_white(int u) {
 }
 
 void DynamicForest::unmark_black(int u) {
-    Node *node = dict[{u, u}];
+    Node *node = dict[{u, u}].get();
     node->black_count--;
     while (node != NULL) {
         node->black_children--;
@@ -276,12 +286,6 @@ vector<int> DynamicForest::black_nodes(int u) {
         }
     }
     return all;
-}
-
-DynamicForest::~DynamicForest() {
-    for (auto kv : dict) {
-        delete kv.second;
-    }
 }
 
 uint64_t DynamicForest::random() {
