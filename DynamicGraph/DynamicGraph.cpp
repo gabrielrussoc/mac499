@@ -13,10 +13,10 @@ void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
     pair<int, int> vu = {v, u};
     F[l].unmark_black(u);
     F[l].unmark_black(v);
-    non_tree_edges[u][l].erase(iterator[uv]);
-    non_tree_edges[v][l].erase(iterator[vu]);
-    iterator[uv] = non_tree_edges[u][l-1].insert(non_tree_edges[u][l-1].end(), v);
-    iterator[vu] = non_tree_edges[v][l-1].insert(non_tree_edges[v][l-1].end(), u);
+    edges[NON_TREE][u][l].erase(iterator[uv]);
+    edges[NON_TREE][v][l].erase(iterator[vu]);
+    iterator[uv] = edges[NON_TREE][u][l-1].insert(edges[NON_TREE][u][l-1].end(), v);
+    iterator[vu] = edges[NON_TREE][v][l-1].insert(edges[NON_TREE][v][l-1].end(), u);
     level[uv] = level[vu] = l-1;
     F[l-1].mark_black(u);
     F[l-1].mark_black(v);
@@ -24,46 +24,41 @@ void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
 
 void DynamicGraph::replace(int u, int v, int l) {
     remove_non_tree(u, v);
-    insert_tree(u, v, l);
+    insert(u, v, l, TREE);
     for (int i = l; i <= LOGN; i++) {
         F[i].link(u, v);
     }
 }
 
 DynamicGraph::DynamicGraph(int n) :
-    LOGN(ceil(log2(n))),
-    F(vector<DynamicForest>(LOGN + 1, DynamicForest(n))),
-    tree_edges(vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1))),
-    non_tree_edges(vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1))) {}
+        LOGN(ceil(log2(n))),
+        F(vector<DynamicForest>(LOGN + 1, DynamicForest(n))) {
+    edges[TREE] = vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1));
+    edges[NON_TREE] = vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1));
+}
 
 void DynamicGraph::insert(int u, int v) {
     if (!F[LOGN].is_connected(u, v)) {
         F[LOGN].link(u, v);
-        insert_tree(u, v, LOGN);
+        insert(u, v, LOGN, TREE);
     } else {
-        insert_non_tree(u, v);
+        insert(u, v, LOGN, NON_TREE);
     }
 }
 
-void DynamicGraph::insert_tree(int u, int v, int l) {
+void DynamicGraph::insert(int u, int v, int l, edge_type type) {
     pair<int, int> uv = {u, v};
     pair<int, int> vu = {v, u};
-    iterator[uv] = tree_edges[u][l].insert(tree_edges[u][l].end(), v);
-    iterator[vu] = tree_edges[v][l].insert(tree_edges[v][l].end(), u);
+    iterator[uv] = edges[type][u][l].insert(edges[type][u][l].end(), v);
+    iterator[vu] = edges[type][v][l].insert(edges[type][v][l].end(), u);
     level[uv] = level[vu] = l;
-    F[l].mark_white(u);
-    F[l].mark_white(v);
-}
-
-// TODO(gabrielrc): Esse código é muito parecido com o de insert_tree. Reuse!
-void DynamicGraph::insert_non_tree(int u, int v) {
-    pair<int, int> uv = {u, v};
-    pair<int, int> vu = {v, u};
-    iterator[uv] = non_tree_edges[u][LOGN].insert(non_tree_edges[u][LOGN].end(), v);
-    iterator[vu] = non_tree_edges[v][LOGN].insert(non_tree_edges[v][LOGN].end(), u);
-    level[uv] = level[vu] = LOGN;
-    F[LOGN].mark_black(u);
-    F[LOGN].mark_black(v);
+    if (type == TREE) {
+        F[l].mark_white(u);
+        F[l].mark_white(v);
+    } else {
+        F[l].mark_black(u);
+        F[l].mark_black(v);
+    }
 }
 
 void DynamicGraph::remove(int u, int v) {
@@ -79,8 +74,8 @@ void DynamicGraph::remove(int u, int v) {
         }
         downgrade_tree_edges(u, i);
         for (int x : F[i].black_nodes(u)) { // x eh um vertice de T_u em F[i]
-            auto it = non_tree_edges[x][i].begin();
-            while (it != non_tree_edges[x][i].end()) {
+            auto it = edges[NON_TREE][x][i].begin();
+            while (it != edges[NON_TREE][x][i].end()) {
                 int y = *it; // x-y eh uma aresta de nivel i, x pertence a T_u
                 if (F[i].is_connected(x, y)) {
                     ++it; // importante fazer isso antes pq vou remover
@@ -97,21 +92,21 @@ void DynamicGraph::remove(int u, int v) {
 // Rebaixa todos as arestas de arvore de T_u em F_l
 void DynamicGraph::downgrade_tree_edges(int u, int l) {
     for (int x : F[l].white_nodes(u)) {
-        auto it = tree_edges[x][l].begin();
-        while (it != tree_edges[x][l].end()) {
+        auto it = edges[TREE][x][l].begin();
+        while (it != edges[TREE][x][l].end()) {
             int y = *it;
             ++it;
             pair<int, int> xy = {x, y};
             pair<int, int> yx = {y, x};
             F[l].unmark_white(x);
             F[l].unmark_white(y);
-            tree_edges[x][l].erase(iterator[xy]);
-            tree_edges[y][l].erase(iterator[yx]);
+            edges[TREE][x][l].erase(iterator[xy]);
+            edges[TREE][y][l].erase(iterator[yx]);
             F[l-1].link(x, y);
             F[l-1].mark_white(x);
             F[l-1].mark_white(y);
-            iterator[xy] = tree_edges[x][l-1].insert(tree_edges[x][l-1].end(), y);
-            iterator[yx] = tree_edges[y][l-1].insert(tree_edges[y][l-1].end(), x);
+            iterator[xy] = edges[TREE][x][l-1].insert(edges[TREE][x][l-1].end(), y);
+            iterator[yx] = edges[TREE][y][l-1].insert(edges[TREE][y][l-1].end(), x);
             level[xy] = level[yx] = l-1;
         }
     }
@@ -119,8 +114,8 @@ void DynamicGraph::downgrade_tree_edges(int u, int l) {
 
 void DynamicGraph::remove_tree(int u, int v) {
     int l = level[{u, v}];
-    tree_edges[u][l].erase(iterator[{u, v}]);
-    tree_edges[v][l].erase(iterator[{v, u}]);
+    edges[TREE][u][l].erase(iterator[{u, v}]);
+    edges[TREE][v][l].erase(iterator[{v, u}]);
     // TODO(gabrielrc): Abstrair black/white para tree/non_tree
     F[l].unmark_white(u);
     F[l].unmark_white(v);
@@ -131,8 +126,8 @@ void DynamicGraph::remove_tree(int u, int v) {
 
 void DynamicGraph::remove_non_tree(int u, int v) {
     int l = level[{u, v}];
-    non_tree_edges[u][l].erase(iterator[{u, v}]);
-    non_tree_edges[v][l].erase(iterator[{v, u}]);
+    edges[NON_TREE][u][l].erase(iterator[{u, v}]);
+    edges[NON_TREE][v][l].erase(iterator[{v, u}]);
     // TODO(gabrielrc): Abstrair black/white para tree/non_tree
     F[l].unmark_black(u);
     F[l].unmark_black(v);
