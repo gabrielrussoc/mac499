@@ -23,7 +23,7 @@ void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
 }
 
 void DynamicGraph::replace(int u, int v, int l) {
-    remove_non_tree(u, v);
+    remove(u, v, NON_TREE);
     insert(u, v, l, TREE);
     for (int i = l; i <= LOGN; i++) {
         F[i].link(u, v);
@@ -64,10 +64,10 @@ void DynamicGraph::insert(int u, int v, int l, edge_type type) {
 void DynamicGraph::remove(int u, int v) {
     int l = level[{u, v}];
     if (!F[LOGN].has_edge(u, v)) {
-        remove_non_tree(u, v);
+        remove(u, v, NON_TREE);
         return;
     }
-    remove_tree(u, v);
+    remove(u, v, TREE);
     for (int i = l; i <= LOGN; i++) {
         if (F[i].size(u) > F[i].size(v)) {
             std::swap(u, v);
@@ -112,25 +112,20 @@ void DynamicGraph::downgrade_tree_edges(int u, int l) {
     }
 }
 
-void DynamicGraph::remove_tree(int u, int v) {
+void DynamicGraph::remove(int u, int v, edge_type type) {
     int l = level[{u, v}];
-    edges[TREE][u][l].erase(iterator[{u, v}]);
-    edges[TREE][v][l].erase(iterator[{v, u}]);
-    // TODO(gabrielrc): Abstrair black/white para tree/non_tree
-    F[l].unmark_white(u);
-    F[l].unmark_white(v);
-    for (int i = l; i <= LOGN; i++) {
-        F[i].cut(u, v);
+    edges[type][u][l].erase(iterator[{u, v}]);
+    edges[type][v][l].erase(iterator[{v, u}]);
+    if (type == TREE) {
+        F[l].unmark_white(u);
+        F[l].unmark_white(v);
+        for (int i = l; i <= LOGN; i++) {
+            F[i].cut(u, v);
+        }
+    } else {
+        F[l].unmark_black(u);
+        F[l].unmark_black(v);
     }
-}
-
-void DynamicGraph::remove_non_tree(int u, int v) {
-    int l = level[{u, v}];
-    edges[NON_TREE][u][l].erase(iterator[{u, v}]);
-    edges[NON_TREE][v][l].erase(iterator[{v, u}]);
-    // TODO(gabrielrc): Abstrair black/white para tree/non_tree
-    F[l].unmark_black(u);
-    F[l].unmark_black(v);
 }
 
 bool DynamicGraph::is_connected(int u, int v) {

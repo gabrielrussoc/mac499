@@ -29,8 +29,7 @@ class DynamicGraph {
     void downgrade_tree_edges(int u, int l);
     void replace(int u, int v, int l);
     void insert(int u, int v, int l, edge_type type);
-    void remove_tree(int u, int v);
-    void remove_non_tree(int u, int v);
+    void remove(int u, int v, edge_type type);
 };
 
 } // namespace usp
