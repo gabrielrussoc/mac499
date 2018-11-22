@@ -22,12 +22,9 @@ void DynamicGraph::downgrade_non_tree(int u, int v, int l) {
     F[l-1].mark_black(v);
 }
 
-void DynamicGraph::replace(int u, int v, int l) {
+void DynamicGraph::promote(int u, int v, int l) {
     remove(u, v, NON_TREE);
     insert(u, v, l, TREE);
-    for (int i = l; i <= LOGN; i++) {
-        F[i].link(u, v);
-    }
 }
 
 DynamicGraph::DynamicGraph(int n) :
@@ -39,7 +36,6 @@ DynamicGraph::DynamicGraph(int n) :
 
 void DynamicGraph::insert(int u, int v) {
     if (!F[LOGN].is_connected(u, v)) {
-        F[LOGN].link(u, v);
         insert(u, v, LOGN, TREE);
     } else {
         insert(u, v, LOGN, NON_TREE);
@@ -55,6 +51,9 @@ void DynamicGraph::insert(int u, int v, int l, edge_type type) {
     if (type == TREE) {
         F[l].mark_white(u);
         F[l].mark_white(v);
+        for (int i = l; i <= LOGN; i++) {
+            F[i].link(u, v);
+        }
     } else {
         F[l].mark_black(u);
         F[l].mark_black(v);
@@ -81,7 +80,7 @@ void DynamicGraph::remove(int u, int v) {
                     ++it; // importante fazer isso antes pq vou remover
                     downgrade_non_tree(x, y, i);
                 } else {
-                    replace(x, y, i);
+                    promote(x, y, i);
                     return;
                 }
             }
