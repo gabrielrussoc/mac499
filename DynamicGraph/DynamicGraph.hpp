@@ -25,9 +25,8 @@ class DynamicGraph {
     std::vector<std::vector<std::list<int>>> edges[2];
     std::map<std::pair<int, int>, int> level;
     std::map<std::pair<int, int>, std::list<int>::iterator> iterator;
-    void downgrade_non_tree(int u, int v, int l);
+    void downgrade(int u, int v, int l, edge_type type);
     void downgrade_tree_edges(int u, int l);
-    void promote(int u, int v, int l);
     void insert(int u, int v, int l, edge_type type);
     void remove(int u, int v, edge_type type);
 };
