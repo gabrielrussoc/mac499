@@ -25,6 +25,10 @@ class DynamicForest {
     std::vector<int> black_nodes(int u);
 
  private:
+    enum COLOR {
+        BLACK = 0,
+        WHITE = 1,
+    };
     struct Node {
         explicit Node(uint64_t priority, int label);
         uint64_t priority;
@@ -33,16 +37,15 @@ class DynamicForest {
         Node* parent;
         size_t size;
         bool greaterThanParent;
-        int white_count;
-        int black_count;
-        int white_children;
-        int black_children;
+        int marks[2];
+        int subtree_marks[2];
         int label;
         size_t order();
-        void update_size();
-        void update_marks();
+        void refresh();
         Node* get_root();
     };
+    void mark(int u, COLOR color, int delta);
+    std::vector<int> get_nodes(int u, COLOR color);
     std::map<std::pair<int, int>, std::unique_ptr<Node>> dict;
     std::mt19937_64 gen;
     static std::pair<Node*, Node*> split(Node *node, size_t k);

@@ -9,137 +9,14 @@ using std::queue;
 
 namespace usp {
 
-// Devolve a ordem de um nó. 1-indexed.
-size_t DynamicForest::Node::order() {
-    size_t qt = 0;
-    bool lessOrEqual = true;
-    DynamicForest::Node *node = this;
-    while (node != NULL) {
-        if (lessOrEqual) {
-            qt++;
-            if (node->left != NULL) {
-                qt += node->left->size;
-            }
-        }
-        lessOrEqual = node->greaterThanParent;
-        node = node->parent;
-    }
-    return qt;
-}
-
-void DynamicForest::Node::update_size() {
-    this->size = 1;
-    if (this->left != NULL) {
-        this->size += this->left->size;
-    }
-    if (this->right != NULL) {
-        this->size += this->right->size;
-    }
-}
-void DynamicForest::Node::update_marks() {
-    this->white_children = this->white_count;
-    this->black_children = this->black_count;
-    if (this->left != NULL) {
-        this->white_children += this->left->white_children;
-        this->black_children += this->left->black_children;
-    }
-    if (this->right != NULL) {
-        this->white_children += this->right->white_children;
-        this->black_children += this->right->black_children;
-    }
-}
-
-// Devolve duas árvores, com os k-primeiros elementos na primeira e o resto na segunda
-pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node, size_t k) {
-    if (node == NULL) {
-        return {NULL, NULL};
-    }
-    size_t less_than = 0;
-    if (node->left != NULL) {
-        less_than = node->left->size;
-    }
-    if (less_than < k) {
-        auto spl = split(node->right, k - less_than - 1);
-        Node *left = spl.first;
-        Node *right = spl.second;
-        node->right = left;
-        if (left != NULL) {
-            left->parent = node;
-            left->greaterThanParent = true;
-        }
-        node->parent = NULL;
-        node->update_size();
-        node->update_marks();
-        return {node, right};
-    } else {
-        auto spl = split(node->left, k);
-        Node *left = spl.first;
-        Node *right = spl.second;
-        node->left = right;
-        if (right != NULL) {
-            right->parent = node;
-            right->greaterThanParent = false;
-        }
-        node->parent = NULL;
-        node->update_size();
-        node->update_marks();
-        return {left, node};
-    }
-}
-
-DynamicForest::Node* DynamicForest::merge(DynamicForest::Node *a, DynamicForest::Node *b) {
-    if (a == NULL) {
-        return b;
-    }
-    if (b == NULL) {
-        return a;
-    }
-    if (a->priority < b->priority) {
-        Node *node = merge(a, b->left);
-        b->left = node;
-        node->parent = b;
-        node->greaterThanParent = false;
-        b->update_size();
-        b->update_marks();
-        return b;
-    } else {
-        Node *node = merge(a->right, b);
-        a->right = node;
-        node->parent = a;
-        node->greaterThanParent = true;
-        a->update_size();
-        a->update_marks();
-        return a;
-    }
-}
-
-DynamicForest::Node* DynamicForest::Node::get_root() {
-    DynamicForest::Node* node = this;
-    while (node->parent != NULL) {
-        node = node->parent;
-    }
-    return node;
-}
-
-DynamicForest::Node::Node(uint64_t priority, int label = -1) :
-    priority(priority),
-    left(NULL),
-    right(NULL),
-    parent(NULL),
-    size(1),
-    greaterThanParent(false),
-    white_count(0),
-    black_count(0),
-    white_children(0),
-    black_children(0),
-    label(label) {}
-
+// Inicializa a floresta com n vertices e nenhuma aresta
 DynamicForest::DynamicForest(size_t n) : gen((std::random_device())()) {
     for (int u = 0; u < n; u++) {
         this->dict[{u, u}] = std::make_unique<Node>(random(), u);
     }
 }
 
+// Copy constructor
 DynamicForest::DynamicForest(const DynamicForest& other) {
     std::unordered_map<Node*, Node*> copy;
     copy[NULL] = NULL;
@@ -155,14 +32,7 @@ DynamicForest::DynamicForest(const DynamicForest& other) {
     }
 }
 
-DynamicForest::Node* DynamicForest::reroot(int u) {
-    DynamicForest::Node *uu = this->dict[{u, u}].get();
-    size_t k = uu->order();
-    DynamicForest::Node *root = uu->get_root();
-    auto spl = split(root, k - 1);
-    return merge(spl.second, spl.first);
-}
-
+// Adiciona a aresta uv na floresta. Supoe que uv nao existe
 void DynamicForest::link(int u, int v) {
     Node *uv = (this->dict[{u, v}] = std::make_unique<Node>(random())).get();
     Node *vu = (this->dict[{v, u}] = std::make_unique<Node>(random())).get();
@@ -171,14 +41,7 @@ void DynamicForest::link(int u, int v) {
     merge(nu, merge(uv, merge(nv, vu)));
 }
 
-bool DynamicForest::is_connected(int u, int v) {
-    return this->dict[{u, u}]->get_root() == this->dict[{v, v}]->get_root();
-}
-
-bool DynamicForest::has_edge(int u, int v) {
-    return this->dict.find({u, v}) != this->dict.end();
-}
-
+// Remove a aresta uv da floresta. Supoe que uv existe
 void DynamicForest::cut(int u, int v) {
     Node *uv = dict[{u, v}].get();
     Node *vu = dict[{v, u}].get();
@@ -201,48 +64,64 @@ void DynamicForest::cut(int u, int v) {
     dict.erase({v, u});
 }
 
+// Devolve true se existe um caminho entre os vertices u e v na floresta
+bool DynamicForest::is_connected(int u, int v) {
+    return this->dict[{u, u}]->get_root() == this->dict[{v, v}]->get_root();
+}
+
+// Devolve true se a aresta uv esta na floresta
+bool DynamicForest::has_edge(int u, int v) {
+    return this->dict.find({u, v}) != this->dict.end();
+}
+
+// Devolve o tamanho (numero de vertices) da componente do vertice u
 size_t DynamicForest::size(int u) {
     int sz = dict[{u, u}]->get_root()->size;
     return (sz + 2) / 3;
 }
 
+// Adiciona uma marca branca no vertice u
 void DynamicForest::mark_white(int u) {
-    Node *node = dict[{u, u}].get();
-    node->white_count++;
-    while (node != NULL) {
-        node->white_children++;
-        node = node->parent;
-    }
+    mark(u, WHITE, 1);
 }
 
+// Adiciona uma marca preta no vertice u
 void DynamicForest::mark_black(int u) {
-    Node *node = dict[{u, u}].get();
-    node->black_count++;
-    while (node != NULL) {
-        node->black_children++;
-        node = node->parent;
-    }
+    mark(u, BLACK, 1);
 }
 
+// Remove uma marca branca do vertice u
 void DynamicForest::unmark_white(int u) {
-    Node *node = dict[{u, u}].get();
-    node->white_count--;
-    while (node != NULL) {
-        node->white_children--;
-        node = node->parent;
-    }
+    mark(u, WHITE, -1);
 }
 
+// Remove uma marca preta do vertice u
 void DynamicForest::unmark_black(int u) {
+    mark(u, BLACK, -1);
+}
+
+// Devolve todos os vertices brancos na componente do vertice u
+vector<int> DynamicForest::white_nodes(int u) {
+    return get_nodes(u, WHITE);
+}
+
+// Devolve todos os vertices pretos na componente do vertice u
+vector<int> DynamicForest::black_nodes(int u) {
+    return get_nodes(u, BLACK);
+}
+
+// Adiciona delta marcas da cor color no vertice u
+void DynamicForest::mark(int u, COLOR color, int delta) {
     Node *node = dict[{u, u}].get();
-    node->black_count--;
+    node->marks[color] += delta;
     while (node != NULL) {
-        node->black_children--;
+        node->subtree_marks[color] += delta;
         node = node->parent;
     }
 }
 
-vector<int> DynamicForest::white_nodes(int u) {
+// Devolve todos os vertices da cor color na componente do vertice u
+vector<int> DynamicForest::get_nodes(int u, COLOR color) {
     vector<int> all;
     Node *root = dict[{u, u}]->get_root();
     queue<Node*> q;
@@ -250,10 +129,10 @@ vector<int> DynamicForest::white_nodes(int u) {
     while (!q.empty()) {
         Node *node = q.front();
         q.pop();
-        if (node->white_count > 0) {
+        if (node->marks[color] > 0) {
             all.push_back(node->label);
         }
-        if (node->white_children > 0) {
+        if (node->subtree_marks[color] > 0) {
             if (node->left != NULL) {
                 q.push(node->left);
             }
@@ -265,32 +144,139 @@ vector<int> DynamicForest::white_nodes(int u) {
     return all;
 }
 
-vector<int> DynamicForest::black_nodes(int u) {
-    vector<int> all;
-    Node *root = dict[{u, u}]->get_root();
-    queue<Node*> q;
-    q.push(root);
-    while (!q.empty()) {
-        Node *node = q.front();
-        q.pop();
-        if (node->black_count > 0) {
-            all.push_back(node->label);
-        }
-        if (node->black_children > 0) {
-            if (node->left != NULL) {
-                q.push(node->left);
-            }
-            if (node->right != NULL) {
-                q.push(node->right);
-            }
-        }
-    }
-    return all;
-}
-
+// Devolve um inteiro (pseudo-)aleatorio de 64 bits
 uint64_t DynamicForest::random() {
     std::uniform_int_distribution<uint64_t> distr;
     return distr(this->gen);
+}
+
+// Inicializa uma BST (treap) com apenas um nó
+DynamicForest::Node::Node(uint64_t priority, int label = -1) :
+    priority(priority),
+    left(NULL),
+    right(NULL),
+    parent(NULL),
+    size(1),
+    greaterThanParent(false),
+    marks(),
+    subtree_marks(),
+    label(label) {}
+
+// Devolve a ordem de um nó na BST. Indexado de 1.
+size_t DynamicForest::Node::order() {
+    size_t qt = 0;
+    bool lessOrEqual = true;
+    DynamicForest::Node *node = this;
+    while (node != NULL) {
+        if (lessOrEqual) {
+            qt++;
+            if (node->left != NULL) {
+                qt += node->left->size;
+            }
+        }
+        lessOrEqual = node->greaterThanParent;
+        node = node->parent;
+    }
+    return qt;
+}
+
+// Atualiza as informacoes agregadas de um nó com base em seus filhos
+void DynamicForest::Node::refresh() {
+    this->size = 1;
+    this->subtree_marks[WHITE] = this->marks[WHITE];
+    this->subtree_marks[BLACK] = this->marks[BLACK];
+    if (this->left != NULL) {
+        this->size += this->left->size;
+        this->subtree_marks[WHITE] += this->left->subtree_marks[WHITE];
+        this->subtree_marks[BLACK] += this->left->subtree_marks[BLACK];
+    }
+    if (this->right != NULL) {
+        this->size += this->right->size;
+        this->subtree_marks[WHITE] += this->right->subtree_marks[WHITE];
+        this->subtree_marks[BLACK] += this->right->subtree_marks[BLACK];
+    }
+}
+
+// Devolve duas árvores, com os k-primeiros elementos
+// da BST node na primeira e o resto na segunda
+pair<DynamicForest::Node*, DynamicForest::Node*> DynamicForest::split(Node *node, size_t k) {
+    if (node == NULL) {
+        return {NULL, NULL};
+    }
+    size_t less_than = 0;
+    if (node->left != NULL) {
+        less_than = node->left->size;
+    }
+    if (less_than < k) {
+        auto spl = split(node->right, k - less_than - 1);
+        Node *left = spl.first;
+        Node *right = spl.second;
+        node->right = left;
+        if (left != NULL) {
+            left->parent = node;
+            left->greaterThanParent = true;
+        }
+        node->parent = NULL;
+        node->refresh();
+        return {node, right};
+    } else {
+        auto spl = split(node->left, k);
+        Node *left = spl.first;
+        Node *right = spl.second;
+        node->left = right;
+        if (right != NULL) {
+            right->parent = node;
+            right->greaterThanParent = false;
+        }
+        node->parent = NULL;
+        node->refresh();
+        return {left, node};
+    }
+}
+
+// Une as BSTs a e b numa única árvore. Supoe que todas
+// as chaves de a sao menores que as chaves de b.
+DynamicForest::Node* DynamicForest::merge(DynamicForest::Node *a, DynamicForest::Node *b) {
+    if (a == NULL) {
+        return b;
+    }
+    if (b == NULL) {
+        return a;
+    }
+    if (a->priority < b->priority) {
+        Node *node = merge(a, b->left);
+        b->left = node;
+        b->refresh();
+        node->parent = b;
+        node->greaterThanParent = false;
+        return b;
+    } else {
+        Node *node = merge(a->right, b);
+        a->right = node;
+        a->refresh();
+        node->parent = a;
+        node->greaterThanParent = true;
+        return a;
+    }
+}
+
+// Devolve a raiz da BST
+DynamicForest::Node* DynamicForest::Node::get_root() {
+    DynamicForest::Node* node = this;
+    while (node->parent != NULL) {
+        node = node->parent;
+    }
+    return node;
+}
+
+// Faz com que o vertice u seja raiz de sua componente, isto e, que
+// uu seja o primeiro elemento de sua sequencia eureliana
+DynamicForest::Node* DynamicForest::reroot(int u) {
+    DynamicForest::Node *uu = this->dict[{u, u}].get();
+    size_t k = uu->order();
+    DynamicForest::Node *root = uu->get_root();
+    auto spl = split(root, k - 1);
+    return merge(spl.second, spl.first);
 }
 
 } // namespace usp
