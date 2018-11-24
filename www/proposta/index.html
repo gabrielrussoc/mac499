@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>MAC0499 - Gabriel</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+            <div class="container">
+                <!-- <a class="navbar-brand" href="#"></a> -->
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <div class="navbar-nav">
+                        <a class="nav-item nav-link" href="../">Início</a>
+                        <a class="nav-item nav-link" href="./">Proposta</a>
+                        <a class="nav-item nav-link" target="_blank" href="../monografia.pdf">Monografia</a>
+                        <a class="nav-item nav-link" target="_blank" href="https://github.com/gabrielrussoc/mac499/">Códigos</a>
+                        <a class="nav-item nav-link" target="_blank" href="../poster.pdf">Pôster</a>
+                        <a class="nav-item nav-link" target="_blank" href="../apresentacao.pdf">Apresentação</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            <div class="alert alert-warning" role="alert">
+                Esta página foi publicada 21/04/2018 e não foi alterada. Não reflete fielmente o trabalho final.
+            </div>
+
+            <!-- CABECALHO -->
+            <div class="border-bottom mb-3">
+                <h1>Trabalho de Formatura Supervisionado</h1>
+                <p class="lead">O problema da conectividade em grafos dinâmicos</p>
+            </div>
+
+            <div class="mb-3">
+                <p class="lead"><b>Aluno:</b> Gabriel de Russo e Carmo<br>
+                <b>Supervisor:</b> José Coelho de Pina Junior</p>
+            </div>
+
+            <!-- PROPOSTA -->
+            <div class="border-bottom mb-3"><h3>Resumo</h3></div>
+            <div>
+                <p>
+                    O problema da conexidade num grafo é amplamente conhecido. Dado um grafo, deseja-se manter a
+                    componente conexa de cada vértice. Para grafos estáticos, o problema é simples e estudado em cursos básicos
+                    de ciência da computação. Entretanto, se permitirmos atualizações, isto é, a inserção e remoção de arestas,
+                    o problema se torna muito mais difícil e requer estruturas de dados avançadas.
+                </p>
+                <p>
+                    O problema pode ser <b>totalmente dinâmico</b> ou <b>parcialmente dinâmico</b>, no primeiro sendo pertimida
+                    ambas a adição <b>e</b> a remoção de arestas, enquanto no segundo é pertimida apenas a adição <b>ou</b> a 
+                    remoção de arestas. O caso particular com apenas adição de arestas pode ser resolvido com uma estrutura de
+                    união-busca de modo eficiente e simples, porém de análise não trivial. 
+                </p>
+                <p>
+                    O trabalho pretende:
+                    <ul>
+                        <li>Estudar e analisar algoritmos que resolvem o problema, tanto parcial quanto total;</li>
+                        <li>Implementá-los de forma eficiente numa linguagem de programação moderna;</li>
+                        <li>Testar sua eficiência na prática;</li>
+                        <li>Estudar suas aplicações.</li>
+                    </ul>
+                </p>
+                <p>
+                    Para se atingir os objetivos, me reúno com meu supervisor pelo menos uma vez por semana para o estudo da literatura.
+                    Os encontros têm se mostrado muito efetivos e estão ajudando muito na compreensão e no avanço do trabalho. Também tenho
+                    lido alguns artigos e livros sobre o assunto. As implementações virão conforme os problemas vão sendo estudados e serão
+                    publicadas aqui na página.
+                </p>
+            </div>
+
+            <!-- CRONOGRAMA -->
+            <div class="border-bottom mb-3"><h3>Cronograma</h3></div>
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="4">Atividade</th>
+                        <th scope="col">Abr</th>
+                        <th scope="col">Mai</th>
+                        <th scope="col">Jun</th>
+                        <th scope="col">Jul</th>
+                        <th scope="col">Ago</th>
+                        <th scope="col">Set</th>
+                        <th scope="col">Out</th>
+                        <th scope="col">Nov</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4">Estudo e análise dos algoritmos</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Implementação e testes</td>
+                        <td></td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Estudo das aplicações</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Elaboração da monografia</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                        <td>&bull;</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+        <script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+        <script type="text/javascript" src="../js/bootstrap.min.js"></script>
+    </body>
+
+</html>
+
