@@ -9,8 +9,12 @@ using std::vector;
 namespace usp {
 
 DynamicGraph::DynamicGraph(int n) :
-        LOGN(ceil(log2(n))),
-        F(vector<DynamicForest>(LOGN + 1, DynamicForest(n))) {
+        LOGN(ceil(log2(n))) {
+    F = vector<DynamicForest>();
+    F.reserve(LOGN + 1);
+    for (int i = 0; i < LOGN + 1; i++) {
+        F.emplace_back(n);
+    }
     edges[TREE] = vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1));
     edges[NON_TREE] = vector<vector<list<int>>>(n, vector<list<int>>(LOGN + 1));
 }
