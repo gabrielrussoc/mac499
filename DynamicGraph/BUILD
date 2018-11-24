@@ -6,6 +6,9 @@ cc_library(
     deps = [
         "//DynamicForest:DynamicForest",
     ],
+    copts = [
+        "-O2",
+    ],
     visibility = [
         "//visibility:public",
     ],
