@@ -92,7 +92,7 @@ void do_remove(int u, int v, NaiveDynamicGraph &naive, DynamicGraph &dg) {
 
 int main() {
     srand(7);
-    for (int n = 10; n*n < 2e6; n *= 2) {
+    for (int n = 10; n*n < 2e6; n += 10) {
         insert_count = remove_count = query_count = 0;
         hdt_insert_time_in_us = microseconds::zero();
         hdt_remove_time_in_us = microseconds::zero();
