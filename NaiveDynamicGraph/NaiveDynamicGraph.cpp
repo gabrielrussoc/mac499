@@ -2,6 +2,7 @@
 
 #include <queue>
 
+using std::set;
 using std::pair;
 using std::queue;
 using std::vector;
@@ -10,14 +11,16 @@ namespace usp {
 
 NaiveDynamicGraph::NaiveDynamicGraph(size_t n) :
     n(n),
-    adj(vector<vector<bool>>(n, vector<bool>(n, false))) {}
+    adj(vector<set<int>>(n, set<int>())) {}
 
 void NaiveDynamicGraph::insert(int u, int v) {
-    adj[u][v] = adj[v][u] = 1;
+    adj[u].insert(v);
+    adj[v].insert(u);
 }
 
 void NaiveDynamicGraph::remove(int u, int v) {
-    adj[u][v] = adj[v][u] = 0;
+    adj[u].erase(v);
+    adj[v].erase(u);
 }
 
 bool NaiveDynamicGraph::is_connected(int u, int v) const {
@@ -28,8 +31,8 @@ bool NaiveDynamicGraph::is_connected(int u, int v) const {
     while (!q.empty()) {
         int cur = q.front();
         q.pop();
-        for (int nxt = 0; nxt < n; nxt++) {
-            if (adj[cur][nxt] && !vis[nxt]) {
+        for (int nxt : adj[cur]) {
+            if (!vis[nxt]) {
                 q.push(nxt);
                 vis[nxt] = true;
             }
@@ -39,7 +42,7 @@ bool NaiveDynamicGraph::is_connected(int u, int v) const {
 }
 
 bool NaiveDynamicGraph::has_edge(int u, int v) const {
-    return adj[u][v];
+    return adj[u].find(v) != adj[u].end();
 }
 
 size_t NaiveDynamicGraph::size() const {
@@ -49,10 +52,8 @@ size_t NaiveDynamicGraph::size() const {
 vector<pair<int, int>> NaiveDynamicGraph::edges() const {
     vector<pair<int, int>> edges;
     for (int u = 0; u < n; u++) {
-        for (int v = u + 1; v < n; v++) {
-            if (adj[u][v]) {
-                edges.push_back({u, v});
-            }
+        for (int v : adj[u]) {
+            if (u < v) edges.push_back({u, v});
         }
     }
     return edges;

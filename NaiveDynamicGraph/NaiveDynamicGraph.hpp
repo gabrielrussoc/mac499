@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -17,7 +18,7 @@ class NaiveDynamicGraph {
     static NaiveDynamicGraph grid(int n, int m);
  private:
     const size_t n;
-    std::vector<std::vector<bool>> adj;
+    std::vector<std::set<int>> adj;
 };
 
 } // namespace usp
