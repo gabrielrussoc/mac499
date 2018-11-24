@@ -72,3 +72,19 @@ Há também um teste exaustivo que se mostrou muito eficiente em detectar proble
 ```
 bazel test //Stress:StressTest
 ```
+
+## Perfomance
+
+O módulo perfomance é responsável por medir o desempenho do algoritmo. Pode ser executado com
+
+```
+bazel run //Perfomance:Perfomance
+```
+
+A saída é no formato csv, contendo as informações
+
+```
+tamanho do grafo, tempo gasto com inserções, número de inserções, tempo gasto com remoções, número de remoções, tempo gasto com consultas, número de consultas
+```
+
+Todos os tempos estão em microssegundos.
