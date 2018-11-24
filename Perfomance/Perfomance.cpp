@@ -91,13 +91,26 @@ void do_remove(int u, int v, NaiveDynamicGraph &naive, DynamicGraph &dg) {
 }
 
 int main() {
+    srand(7);
     for (int n = 10; n*n < 2e6; n *= 2) {
+        insert_count = remove_count = query_count = 0;
+        hdt_insert_time_in_us = microseconds::zero();
+        hdt_remove_time_in_us = microseconds::zero();
+        hdt_query_time_in_us = microseconds::zero();
+
         NaiveDynamicGraph original = NaiveDynamicGraph::grid(n, n);
         NaiveDynamicGraph naive(n * n);
         DynamicGraph dg(n * n);
 
         vector<pair<int, int>> edges = original.edges();
-        srand(7);
+        for (const auto &edge : edges) {
+            bool should_insert = rand() % 2;
+            if (should_insert) {
+                naive.insert(edge.first, edge.second);
+                dg.insert(edge.first, edge.second);
+            }
+        }
+
         for (int iter = 1; iter <= kIterations; iter++) {
             int idx = rand() % edges.size();
             int u = edges[idx].first;
@@ -123,7 +136,7 @@ int main() {
             printf(",%lld,%d", hdt_query_time_in_us.count(), query_count);
             // printf("naive query %lld\n", naive_query_time_in_us.count());
             puts("");
-            printf("avg query %lf\n", (double) hdt_query_time_in_us.count() / query_count);
+            // printf("avg query %lf\n", (double) hdt_query_time_in_us.count() / query_count);
         }
     }
 }
