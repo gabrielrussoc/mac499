@@ -1,7 +1,7 @@
 # https://docs.bazel.build/versions/master/be/c-cpp.html#cc_binary
 cc_binary(
-    name = "Perfomance",
-    srcs = ["Perfomance.cpp"],
+    name = "Performance",
+    srcs = ["Performance.cpp"],
     copts = [
         "-O2",
     ],

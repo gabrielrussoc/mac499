@@ -73,12 +73,12 @@ Há também um teste exaustivo que se mostrou muito eficiente em detectar proble
 bazel test //Stress:StressTest
 ```
 
-## Perfomance
+## Performance
 
-O módulo perfomance é responsável por medir o desempenho do algoritmo. Pode ser executado com
+O módulo performance é responsável por medir o desempenho do algoritmo. Pode ser executado com
 
 ```
-bazel run //Perfomance:Perfomance
+bazel run //Performance:Performance
 ```
 
 A saída é no formato csv, contendo as informações
